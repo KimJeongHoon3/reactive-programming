@@ -5,6 +5,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class PubSub {
     //publisher <-- Observable
@@ -19,44 +20,63 @@ public class PubSub {
     // => 시작은 onSubscrbie는 반드시 호출해야하며, onNext는 여러번 호출가능하고, OnError나 OnComplete는 옵션인데 둘중에 하나만 선택가능하다 라는 뜻
 
     public static void main(String[] args) {
-        Arrays.asList(1,2,3,4,5);
+        Iterable<Integer> iterable=Arrays.asList(1,2,3,4,5);
 
         Publisher publisher=new Publisher() {
+
             @Override
             public void subscribe(Subscriber s) {
-                  s.onSubscribe(new Subscription() {
-                      @Override
-                      public void request(long n) {
+                Iterator<Integer> iter=iterable.iterator();
 
+                s.onSubscribe(new Subscription() {
+                    @Override
+                    public void request(long n) {
+                      try{
+                          new Thread(()->{ //여기서 스레드 사용한다면 고민해볼게많음!
+                              for(int i=0;i<n;i++){
+                                  if(iter.hasNext()){
+                                      s.onNext(iter.next());
+                                  }else{
+                                      s.onComplete();
+                                  }
+                              }
+                          }).start();
+                      }catch(Exception e){
+                          s.onError(e);
                       }
+                    }
 
-                      @Override
-                      public void cancel() {
+                    @Override
+                    public void cancel() {
 
-                      }
-                  });
+                    }
+                });
             }
         };
 
         Subscriber<Integer> s=new Subscriber<Integer>() {
+            Subscription s;
             @Override
             public void onSubscribe(Subscription s) {
-
+                System.out.println(Thread.currentThread().getName()+" | onSubscribe");
+                this.s=s;
+                this.s.request(1);
             }
 
             @Override
             public void onNext(Integer integer) {
-
+                System.out.println(Thread.currentThread().getName()+" | onNext : "+integer);
+                this.s.request(1);
             }
 
             @Override
             public void onError(Throwable t) {
-
+                t.printStackTrace();
             }
 
             @Override
             public void onComplete() {
-
+                System.out.println(Thread.currentThread().getName()+" | onComplete");
             }
         };
 
