@@ -2,15 +2,40 @@ package com.study.reactiveprgramming.modernjava;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class StreamTest {
 
+    @Test
+    void test_flatmap(){
+        String[] strArr={"Hello","World"};
+        Map<String, Long> collect = Arrays.stream(strArr)
+                .flatMap(str -> Arrays.stream(str.split("").clone()))
+//                .distinct()
+                .collect(Collectors.groupingBy(String::toString, Collectors.counting()));
+        System.out.println(collect);
+    }
+
+    @Test
+    void p166_2번_3번(){
+        // 두개의 숫자 리스트가 있을때 모든 숫장 쌍의 리스트를 반환
+        // [1,2,3], [3,4] => [(1,3),(1,4),(2,3),(2,4),(3,3),(3,4)]
+        List<Integer> list1=Arrays.asList(1,2,3);
+        List<Integer> list2=Arrays.asList(3,4);
+
+        List<int[]> pairList=list1.stream()
+                .flatMap(i -> list2.stream().filter(j -> (i+j)%3==0).map(j -> new int[]{i,j}))
+                .collect(Collectors.toList());
+
+        for(int[] pair:pairList){
+            System.out.println(Arrays.toString(pair));
+        }
+
+
+    }
 
     @Test
     void p177_스트림_실전연습(){
@@ -153,4 +178,52 @@ public class StreamTest {
                     '}';
         }
     }
+
+    @Test
+    void 피타고라스(){
+        //100 이하의 값으로 피타고라스 만들수 있는 값들은?
+        List<double[]> list=IntStream.rangeClosed(1,100).boxed()
+                .flatMap(a ->
+                            IntStream.rangeClosed(a,100)
+                            .mapToObj(b -> new double[]{a,b,Math.sqrt((a*a + b*b))})
+                            .filter(arr -> arr[2] % 1 ==0)
+                ).collect(Collectors.toList());
+
+        for(double[] intArr:list){
+            System.out.println(Arrays.toString(intArr));
+        }
+    }
+
+    @Test
+    void 피보나치(){
+        Stream.iterate(new int[]{0,1}
+                        ,t -> new int[]{t[1],t[0]+t[1]}) //다음값에 사용하기위해 저장이 필요
+                .limit(20)
+                .forEach(intArr -> System.out.println(Arrays.toString(intArr))
+//                .forEach(intArr -> System.out.println(intArr[0])
+                );
+    }
+
+    @Test
+    void n을_1_2_3_으로구성(){
+//        IntStream.rangeClosed(1,10)
+//        IntStream.rangeClosed(1,10)
+//                .filter(a -> a+b+c==10 )
+
+
+        // f(1) 1
+        // f(2) 1+1 2
+        // f(3) 1+1+1 1+2 2+1 3
+        // f(4) (1+1+1+1) (1+1+2) (1+2+1) (1+3) (2+1+1) (2+2) (3+1) => 3+2+1
+        // f(5) => f(4) + f(3) + f(2)
+        // f(6) => f(5) + f(4) + f(3)
+        // f(7) => f(6) + f(5) + f(4)
+    }
+
+    @Test
+    void n을_구성하는_모든자연수(){
+
+
+    }
+
 }

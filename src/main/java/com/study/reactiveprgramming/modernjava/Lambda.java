@@ -8,7 +8,7 @@ import java.util.function.Function;
 import static java.util.Comparator.comparing;
 
 
-public class Ramda {
+public class Lambda {
 
     public static void main(String[] args) {
         List<Apple> inventory=new ArrayList<Apple>(){{add(new Apple(10));add(new Apple(5));add(new Apple(50));}};
