@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class SearchShop {
@@ -32,7 +33,6 @@ public class SearchShop {
     ExecutorService executorService= Executors.newFixedThreadPool(Math.min(shops.size(),100));
 
     public List<String> findPrices(String product){
-
 //        return shops.stream().parallel()
 //                .map(shop -> String.format("%s price is %.2f", shop.getName(),shop.getPrice(product)))
 //                .collect(Collectors.toList());
@@ -63,7 +63,7 @@ public class SearchShop {
                 .map(shop -> CompletableFuture.supplyAsync(()->{ //새로운 스레드 worker 1 할당
                     log.info("map1 - "+shop.toString());
                     return shop.getPriceForDiscount(product);
-                }/*,executorService*/))
+                },executorService))
                 .map(future -> future.thenApply( s ->{
                     log.info("map2 - "+s); // worker 1
                     return Quote.parse(s);
@@ -73,13 +73,38 @@ public class SearchShop {
                     return CompletableFuture.supplyAsync(()->{
                         log.info("map3 new completableFuture - "+quote.toString()); //새로운 스레드 worker 2 할당
                         return Discount.applyDiscount(quote);
-                    }/*,executorService*/);
+                    },executorService);
                 }) )
                 .collect(Collectors.toList());
         log.info("거의다끝");
         return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
+
+    }
+
+    public CompletableFuture[] findPricesWithDiscountAsArray_realtime(String product){
+        log.info("start");
+        return shops2.stream()
+                .map(shop -> CompletableFuture.supplyAsync(()->{ //새로운 스레드 worker 1 할당
+                    log.info("map1 - "+shop.toString());
+                    return shop.getPriceForDiscount(product);
+                },executorService))
+                .map(future -> future.thenApply( s ->{
+                    log.info("map2 - "+s); // worker 1
+                    return Quote.parse(s);
+                }))
+                .map(future -> future.thenCompose(quote -> {
+                    log.info("map3 - "+quote.toString()); // worker 1
+                    return CompletableFuture.supplyAsync(()->{
+                        log.info("map3 new completableFuture - "+quote.toString()); //새로운 스레드 worker 2 할당
+                        return Discount.applyDiscount(quote);
+                    },executorService);
+                }))
+                .map(future -> future.thenAccept(log::info)) //worker 2
+//                .toArray(size -> new CompletableFuture[size]);
+                .toArray(CompletableFuture[]::new);
+
 
     }
 }

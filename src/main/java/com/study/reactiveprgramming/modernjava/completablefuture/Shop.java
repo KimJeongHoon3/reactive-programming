@@ -1,15 +1,18 @@
 package com.study.reactiveprgramming.modernjava.completablefuture;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+@Slf4j
 public class Shop {
 
     private final String name;
-    Random random=new Random();
+    static Random random=new Random();
 
     private Discount.Code code;
 
@@ -52,6 +55,16 @@ public class Shop {
     public static void delay() {
         try {
             Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void randomDelay() {
+        int mills=500 + random.nextInt(2000);
+        try {
+            log.info("randomDelay : "+mills);
+            Thread.sleep(mills);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

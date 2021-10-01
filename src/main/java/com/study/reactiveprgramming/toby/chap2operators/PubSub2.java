@@ -1,4 +1,4 @@
-package com.study.reactiveprgramming.toby;
+package com.study.reactiveprgramming.toby.chap2operators;
 
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
@@ -6,6 +6,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,8 +15,11 @@ import java.util.stream.Stream;
 public class PubSub2 {
     public static void main(String[] args) {
         Publisher<Integer> publisher= getPublisher();
+        Publisher<Integer> reducePub=reducePub(publisher,1,(a,b)->a*b);
         Publisher<Integer> mapPub=mapPub(publisher,i -> i+1);
         Publisher<Integer> mapPub2=mapPub(mapPub,i -> i*3);
+//        Publisher<Integer> reducePub=reducePub(mapPub2,0,(a,b)->a+b);
+//        Publisher<String> mapPub3=mapPub(mapPub2, i-> i+" 끝 ");
 
         /***
          * logSub이 mapPub2를 구독하고, mapPub2 가 mapPub을 구독하고, mapPub이 publisher를 구독..
@@ -23,15 +27,48 @@ public class PubSub2 {
          * 발행자가 데이터나 기타 이벤트들을 자신의 구독자에게 넘겨줌으로써 최종구독자(logSub)가 데이터를 읽어오게됨!
          */
 
-        mapPub2.subscribe(logSub());
+        reducePub.subscribe(logSub());
     }
 
-    private static Publisher<Integer> mapPub(Publisher<Integer> publisher, Function<Integer, Integer> function) {
+    private static Publisher<Integer> reducePub(Publisher<Integer> publisher, Integer init, BinaryOperator<Integer> binaryOperator){ //이런거 제네릭으로바꿀때는 실제 구체 타입으로 변경해보고 하라!
         return new Publisher<Integer>() {
             @Override
             public void subscribe(Subscriber<? super Integer> sub) {
-                log.debug("찐 스타트를 향해..");
                 publisher.subscribe(new Subscriber<Integer>() {
+                    Integer total=init;
+                    @Override
+                    public void onSubscribe(Subscription s) {
+                        sub.onSubscribe(s);
+
+                    }
+
+                    @Override
+                    public void onNext(Integer integer) {
+                        total=binaryOperator.apply(total,integer);
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        sub.onError(t);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        sub.onNext(total);
+                        sub.onComplete();
+                    }
+                });
+            }
+        };
+
+    }
+
+    private static <T,R> Publisher<R> mapPub(Publisher<T> publisher, Function<T, R> function) {
+        return new Publisher<R>() {
+            @Override
+            public void subscribe(Subscriber<? super R> sub) {
+                log.debug("찐 스타트를 향해..");
+                publisher.subscribe(new Subscriber<T>() {
                     @Override
                     public void onSubscribe(Subscription s) {
                         log.debug("대리 sub중.. - ");
@@ -39,9 +76,9 @@ public class PubSub2 {
                     }
 
                     @Override
-                    public void onNext(Integer integer) {
-                        log.debug("변형중 - {}",function.apply(integer));
-                        sub.onNext(function.apply(integer));
+                    public void onNext(T value) {
+                        log.debug("변형중 - {}",function.apply(value));
+                        sub.onNext(function.apply(value));
                     }
 
                     @Override
@@ -59,8 +96,8 @@ public class PubSub2 {
 
     }
 
-    private static Subscriber<Integer> logSub() {
-        return new Subscriber<Integer>() {
+    private static <T> Subscriber<T> logSub() {
+        return new Subscriber<T>() {
             @Override
             public void onSubscribe(Subscription s) {
                 log.debug("찐 sub 시작");
@@ -70,8 +107,8 @@ public class PubSub2 {
             }
 
             @Override
-            public void onNext(Integer integer) {
-                log.info("onNext : {}", integer);
+            public void onNext(T value) {
+                log.info("onNext : {}", value);
             }
 
             @Override

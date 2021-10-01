@@ -1,8 +1,7 @@
-package com.study.reactiveprgramming.toby;
+package com.study.reactiveprgramming.toby.chap1basic;
 
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

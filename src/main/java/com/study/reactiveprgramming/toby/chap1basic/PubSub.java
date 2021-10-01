@@ -1,4 +1,4 @@
-package com.study.reactiveprgramming.toby;
+package com.study.reactiveprgramming.toby.chap1basic;
 
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -20,6 +20,8 @@ public class PubSub {
     // => 시작은 onSubscrbie는 반드시 호출해야하며, onNext는 여러번 호출가능하고, OnError나 OnComplete는 옵션인데 둘중에 하나만 선택가능하다 라는 뜻
 
     public static void main(String[] args) {
+
+
         Iterable<Integer> iterable=Arrays.asList(1,2,3,4,5);
 
         Publisher publisher=new Publisher() {

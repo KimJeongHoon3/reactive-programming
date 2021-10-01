@@ -1,4 +1,4 @@
-package com.study.reactiveprgramming.toby;
+package com.study.reactiveprgramming.toby.generics;
 
 import java.util.function.Consumer;
 

@@ -1,6 +1,7 @@
 package com.study.reactiveprgramming.modernjava.completablefuture;
 
 import static com.study.reactiveprgramming.modernjava.completablefuture.Shop.delay;
+import static com.study.reactiveprgramming.modernjava.completablefuture.Shop.randomDelay;
 
 public class Discount {
     public enum Code{
@@ -18,7 +19,7 @@ public class Discount {
     }
 
     private static double apply(double price, Code code) {
-        delay();
+        randomDelay();
         return price * (100-code.percentage) / 100;
     }
 
