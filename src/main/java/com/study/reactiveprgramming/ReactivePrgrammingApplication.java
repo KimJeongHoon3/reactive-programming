@@ -131,4 +131,6 @@ public class ReactivePrgrammingApplication {
             log.info("exit");
         };
     }
+
+//    static class
 }
