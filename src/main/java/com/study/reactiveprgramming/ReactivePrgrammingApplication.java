@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,21 @@ import java.util.concurrent.Future;
 @Slf4j
 @EnableAsync
 public class ReactivePrgrammingApplication {
+
+    @Service
+    public static class MyService3{
+        @Async
+        public ListenableFuture<String> work(String req){
+            return new AsyncResult<>(req + " | asyncService");
+        }
+    }
+
+    @Service
+    public static class MyService4{
+        public String work(String req){
+            return req + " | asyncService";
+        }
+    }
 
     @Component
     public static class MyService{
@@ -119,12 +135,13 @@ public class ReactivePrgrammingApplication {
     }
 
     @Autowired MyService myService;
+    @Autowired MyService3 myService3;
 
-//    @Bean
+    @Bean
     ApplicationRunner run(){ //컨트롤러 같은 역할이라 생각하면됨
         return args -> {
             log.info("run()");
-            ListenableFuture<String> listenableFuture=myService.hello();
+            ListenableFuture<String> listenableFuture=myService3.work("hi");
             listenableFuture.addCallback(res -> log.info("success : {}", res),
                     ex -> log.error("error : {}",ex.getMessage(),ex));
 
