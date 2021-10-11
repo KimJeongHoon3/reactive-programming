@@ -12,10 +12,8 @@ public class RemoteService {
     static class MyController{
         @GetMapping("/remote/service")
         String remote(String data) throws InterruptedException {
+            if(1==1) throw new RuntimeException("일부러 에러");
             Thread.sleep(2000);
-//            if(1==1){
-//                throw new RuntimeException("일부러 에러");
-//            }
             return data +" | remote";
         }
 

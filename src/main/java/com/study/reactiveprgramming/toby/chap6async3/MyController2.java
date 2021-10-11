@@ -4,6 +4,7 @@ import com.study.reactiveprgramming.ReactivePrgrammingApplication;
 import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.Netty4ClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -11,7 +12,9 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -27,7 +30,7 @@ import java.util.function.Function;
 public class MyController2 {
     AsyncRestTemplate asyncRestTemplate;
     public MyController2(){
-        asyncRestTemplate =new AsyncRestTemplate(new Netty4ClientHttpRequestFactory(new NioEventLoopGroup(1)));
+        asyncRestTemplate =new AsyncRestTemplate(new Netty4ClientHttpRequestFactory(new NioEventLoopGroup(1))); //AsyncRestTemplate에서 NioEventLoopGroup을 1로 설정하였던것이 요청뿐아니라 결국 응답처리도 여기서 지정한 스레드 만큼 쓰는것이니깐, 요청뿐아니라 응답받은값을 처리하는데 지연되는 부분이있다면 별도 스레드로 처리할수있도록 해주아야함(여기서는 thenAsync로 서비스로직 처리)
     }
 
     @Autowired
@@ -44,13 +47,14 @@ public class MyController2 {
 
         toCF(asyncRestTemplate.getForEntity("http://localhost:8899/remote/service?data={data}", String.class, idx))
                 .thenCompose(s -> toCF(asyncRestTemplate.getForEntity("http://localhost:8899/remote/service2?data={data}", String.class,s.getBody())))
-                .thenApplyAsync(s -> myService4_sync.work(s.getBody()),es) //기존에 시간이 오래걸릴거같아서 서비스단에서 @Async를 사용하여 비동기로 만들어놓았던것들을 동기로 처리할수있음!(비동기 수행은 CompletableFuture를 사용하는것!) 그리고 필요에따라 적절한 스레드 풀도 유동적으로 지정할수있으니 좋음! 비동기 처리하는 곳을 컨트롤러에서 관리할수있겠네~
+                .thenApplyAsync(s -> myService4_sync.work(s.getBody()),es)
+                //기존에 시간이 오래걸릴거같아서 서비스단에서 @Async를 사용하여 비동기로 만들어놓았던것들을 동기로 처리할수있음!(비동기 수행은 CompletableFuture를 사용하는것!) 그리고 필요에따라 적절한 스레드 풀도 유동적으로 지정할수있으니 좋음! 비동기 처리하는 곳을 컨트롤러에서 관리할수있겠네~
+                //AsyncRestTemplate에서 NioEventLoopGroup을 1로 설정하였던것이 요청뿐아니라 결국 응답처리도 여기서 지정한 스레드 만큼 쓰는것이니깐, 요청뿐아니라 응답받은값을 처리하는데 지연되는 부분이있다면 별도 스레드로 처리할수있도록 해주아야함(여기서는 thenAsync로 서비스로직 처리)
                 .thenAccept(s -> dr.setResult(s))
-                .exceptionally(e -> {
-                    dr.setErrorResult(e.getMessage());
-                    return null;
-                });
-
+            .exceptionally(e -> {  //completablefuture에서 exceptionally로 에러를 잡아주지않으면 CompletableFuture에서 값을 가져오려고 하지않는 이상 아무런 동작을 하지않는다.. 그렇기때문에, DeferredResult에 타임아웃만 떨어져버린다.. 이 타임아웃 에러가 떨어졌을때, 예외핸들러로 전달이 되어서 처리가됨..
+                dr.setErrorResult(e.getMessage());
+                return null;
+            });
 
 //        Completion.from(asyncRestTemplate.getForEntity("http://localhost:8899/remote/service?data={data}", String.class, idx))
 //                .andApply(res -> asyncRestTemplate.getForEntity("http://localhost:8899/remote/service2?data={data}", String.class,res.getBody()))
@@ -69,6 +73,14 @@ public class MyController2 {
 //        });
         return dr;
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public String error(Exception e){
+        log.error("exception handler : "+e.getMessage());
+        return e.getMessage();
+    }
+
 
     private <T> CompletableFuture<T> toCF(ListenableFuture<T> listenableFuture) {
         CompletableFuture<T> completableFuture=new CompletableFuture();

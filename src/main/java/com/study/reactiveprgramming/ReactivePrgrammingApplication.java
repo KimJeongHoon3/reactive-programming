@@ -20,10 +20,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @SpringBootApplication
 @Slf4j
@@ -40,8 +37,17 @@ public class ReactivePrgrammingApplication {
 
     @Service
     public static class MyService4{
-        public String work(String req){
+        public String work(String req) {
+            log.info("req : "+req);
             return req + " | asyncService";
+        }
+    }
+
+    @Service
+    public static class MyService5{
+        @Async
+        public CompletableFuture<String> work(String req){
+            return CompletableFuture.completedFuture(req + " | asyncService");
         }
     }
 

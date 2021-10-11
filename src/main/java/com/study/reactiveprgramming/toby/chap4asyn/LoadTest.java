@@ -16,6 +16,7 @@ public class LoadTest {
         RestTemplate restTemplate=new RestTemplate();
 //        String url="http://localhost:8080/dr";
         String url2="http://localhost:8080/async3/rest?idx={idx}";
+        String url3="http://localhost:8080/webflux/rest?idx={idx}";
 
         CyclicBarrier cyclicBarrier=new CyclicBarrier(101);
 
@@ -30,7 +31,8 @@ public class LoadTest {
                 sw2.start();
 
 //                restTemplate.getForEntity(url,String.class);
-                String res = restTemplate.getForObject(url2, String.class, idx);
+//                String res = restTemplate.getForObject(url2, String.class, idx);
+                String res = restTemplate.getForObject(url3, String.class, idx);
 
                 sw2.stop();
                 log.info("Elapsed : {} {} / {}",idx,sw2.getTotalTimeSeconds(),res);
