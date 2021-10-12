@@ -1,32 +1,18 @@
 package com.study.reactiveprgramming.toby.chap8webflux;
 
 import com.study.reactiveprgramming.ReactivePrgrammingApplication;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.Netty4ClientHttpRequestFactory;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.AsyncRestTemplate;
-import org.springframework.web.context.request.async.DeferredResult;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @RestController
 @Slf4j

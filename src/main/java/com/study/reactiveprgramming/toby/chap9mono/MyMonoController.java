@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * 테스트할때 Netty서버 사용을 위해 'org.springframework.boot:spring-boot-starter-web' 의존성 제거하기!
+ * 이것만 테스트할때 사용가능.. 위의 의존성 제거하면 다른 클래스에 있는거 에러남..
  * */
 @RestController
 @Slf4j
