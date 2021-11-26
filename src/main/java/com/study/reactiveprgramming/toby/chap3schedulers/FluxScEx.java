@@ -25,11 +25,27 @@ public class FluxScEx {
 //                .subscribe(System.out::println);
 
 
-        Flux.interval(Duration.ofMillis(200))
-                .log()
-                .take(10)
-                .log()
-                .subscribe(l -> log.info("{}",l));
+//        Flux.interval(Duration.ofMillis(200))
+//                .log()
+//                .take(10)
+//                .log()
+//                .subscribe(l -> log.info("{}",l));
+
+
+        Flux.just(1,2,3,4,5,6)
+//                .publishOn(Schedulers.boundedElastic())
+                .map(integer -> {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return integer*10;
+                }).log()
+                .publishOn(Schedulers.parallel())
+                .map(integer -> integer+1).log()
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(integer -> log.info("{}",integer));
 
         Thread.sleep(10000);
 

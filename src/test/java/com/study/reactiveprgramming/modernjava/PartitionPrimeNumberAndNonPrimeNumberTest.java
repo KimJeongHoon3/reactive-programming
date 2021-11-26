@@ -20,6 +20,36 @@ public class PartitionPrimeNumberAndNonPrimeNumberTest {
                 .collect(Collectors.partitioningBy(candidate -> isPrime(candidate)));
 
 //        System.out.println(p);
+        System.out.println(p.get(true).size());
+    }
+
+    @Test
+    void testPrime2(){
+        List<Integer> p = IntStream.rangeClosed(2, 2_000_000)
+                .boxed()
+                .filter(i -> {
+                    int sqrt = (int)Math.sqrt(i);
+                    return IntStream.rangeClosed(2,sqrt)
+                            .noneMatch(k -> i%k==0);
+                }).collect(Collectors.toList());
+
+        System.out.println(p.size());
+//        for(Integer i:p){
+//            System.out.println(i);
+//        }
+
+    }
+
+    @Test
+    void testPrime3(){
+        List<Integer> p = IntStream.rangeClosed(2, 2_000_000)
+                .boxed()
+                .collect(new CustomPrimeCollector2());
+
+        System.out.println(p.size());
+//        for(Integer i:p){
+//            System.out.println(i);
+//        }
 
     }
 
@@ -114,4 +144,54 @@ public class PartitionPrimeNumberAndNonPrimeNumberTest {
             return Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
         }
     }
+
+
+    static class CustomPrimeCollector2 implements Collector<Integer,List<Integer>,List<Integer>>{
+
+        @Override
+        public Supplier<List<Integer>> supplier() {
+            return ArrayList::new;
+        }
+
+        @Override
+        public BiConsumer<List<Integer>, Integer> accumulator() {
+            return (list,i) -> {
+                if(isPrime(list,i)) list.add(i);
+            };
+        }
+
+        @Override
+        public BinaryOperator<List<Integer>> combiner() {
+            return null;
+        }
+
+        @Override
+        public Function<List<Integer>, List<Integer>> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
+        }
+
+        <T> List<T> customTakeWhile(List<T> list,Predicate<T> p){
+            for(int i=0;i<list.size();i++){
+                if(!p.test(list.get(i))){
+                    return list.subList(0,i);
+                }
+            }
+
+            return list;
+        }
+
+        boolean isPrime(List<Integer> primeList,Integer candidate){
+            int criteria=(int)Math.sqrt(candidate);
+            return customTakeWhile(primeList,k -> k<=criteria)
+                    .stream()
+                    .noneMatch(i -> candidate%i==0);
+        }
+    }
+
+
 }

@@ -3,8 +3,10 @@ package com.study.reactiveprgramming.etc;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class EtcTest {
     List<Integer> list=new ArrayList<>();
@@ -52,5 +54,22 @@ public class EtcTest {
         list.add(temp);
         list.add(temp);
         System.out.println(list);
+    }
+
+
+    @Test
+    void testFlatMap(){
+        String[] strArr={"Hello", "world"};
+
+        /*List<String> collect = */Arrays.stream(strArr)
+                .map(str -> str.split(""))
+                .flatMap(arr -> Arrays.asList(arr).stream())
+                .forEach(System.out::println);
+//                .distinct()
+//                .collect(Collectors.toList());
+
+
+        
+
     }
 }

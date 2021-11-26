@@ -3,6 +3,7 @@ package com.study.reactiveprgramming.modernjava;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -20,6 +21,17 @@ public class StreamTest {
     }
 
     @Test
+    void test_flatmap2(){
+        String[] strArr={"Hello","World"};
+
+        Map<String, Long> collect = Arrays.stream(strArr)
+                .flatMap(arr -> Arrays.stream(arr.split("")))
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        System.out.println(collect);
+
+    }
+
+    @Test
     void p166_2번_3번(){
         // 두개의 숫자 리스트가 있을때 모든 숫장 쌍의 리스트를 반환
         // [1,2,3], [3,4] => [(1,3),(1,4),(2,3),(2,4),(3,3),(3,4)]
@@ -33,8 +45,18 @@ public class StreamTest {
         for(int[] pair:pairList){
             System.out.println(Arrays.toString(pair));
         }
+    }
 
+    @Test
+    void 합집합(){
+        List<Integer> list1=Arrays.asList(1,2,3);
+        List<Integer> list2=Arrays.asList(3,4);
 
+        List<int[]> collect = list1.stream()
+                .flatMap(a -> list2.stream().map(b -> new int[]{a, b}))
+                .collect(Collectors.toList());
+
+        collect.forEach(intArr -> System.out.println(Arrays.toString(intArr)));
     }
 
     @Test
@@ -60,6 +82,7 @@ public class StreamTest {
                 .forEach(System.out::println);
 
         System.out.println("-----------------");
+
         //2. 거래자가 근무하는 모든 도시를 중복없이 나열
         transactions.stream()
                 .map(Transaction::getTrader)
@@ -77,6 +100,7 @@ public class StreamTest {
                 .forEach(System.out::println);
 
         System.out.println("-----------------");
+
         //4. 모든 거래자의 이름을 알파벳순으로 정렬해서 반환
         transactions.stream()
                 .map(Transaction::getTrader)
@@ -102,6 +126,7 @@ public class StreamTest {
         System.out.println(list);
 
         System.out.println("-----------------");
+
         //7. 전체 트랜잭션중 최댓값?
         transactions.stream()
                 .map(Transaction::getValue)
@@ -195,6 +220,19 @@ public class StreamTest {
     }
 
     @Test
+    void 피타(){
+        List<double[]> collect = IntStream.rangeClosed(1, 100).boxed()
+                .flatMap(a -> IntStream.rangeClosed(a, 100).mapToObj(b -> new double[]{a, b, Math.sqrt(a * a + b * b)}))
+                .filter(dArr -> dArr[2]%1==0 && dArr[2]<=100)
+                .collect(Collectors.toList());
+
+        for(double[] dArr:collect){
+            System.out.println(Arrays.toString(dArr));
+        }
+
+    }
+
+    @Test
     void 피보나치(){
         Stream.iterate(new int[]{0,1}
                         ,t -> new int[]{t[1],t[0]+t[1]}) //다음값에 사용하기위해 저장이 필요
@@ -202,6 +240,29 @@ public class StreamTest {
                 .forEach(intArr -> System.out.println(Arrays.toString(intArr))
 //                .forEach(intArr -> System.out.println(intArr[0])
                 );
+    }
+
+    @Test
+    void 피보(){
+        List<int[]> collect = Stream.iterate(new int[]{1, 1},
+                i -> new int[]{i[1], i[0] + i[1]})
+                .limit(20)
+                .collect(Collectors.toList());
+
+        for(int[] intArr:collect){
+            System.out.println(intArr[0]);
+        }
+//        System.out.println(pibo(10));
+//        Stream
+
+    }
+
+    private int pibo(int i) {
+        if(i==1){
+            return 1;
+        }
+
+        return i+pibo(i-1);
     }
 
     @Test
@@ -226,4 +287,23 @@ public class StreamTest {
 
     }
 
+
+    @Test
+    void testIntStream(){
+
+        IntStream range = IntStream.range(1, 10);
+        System.out.println(Stream.of("ab","cd","ef").reduce(new StringBuilder(),(builder,s)->builder.append(s),StringBuilder::append));
+
+        StringBuilder collect = Stream.of("ab", "cd", "ef").collect(StringBuilder::new, (container, s) -> container.append(s), StringBuilder::append);
+        System.out.println(collect);
+
+
+        Optional<Integer> collect1 = Stream.of(1, 2, 3, 5, 6).collect(Collectors.maxBy(Comparator.comparingInt(Integer::intValue)));
+        System.out.println(collect1.get());
+
+        ArrayList<String> list =new ArrayList<>();
+        LinkedList<String> linkedList =new LinkedList<>();
+//        linkedList.subList()
+
+    }
 }

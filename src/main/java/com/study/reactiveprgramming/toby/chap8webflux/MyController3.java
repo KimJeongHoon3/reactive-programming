@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,6 +73,7 @@ public class MyController3 {
                 .doOnNext(s -> log.info("2번요청 : "+s)) // 여기는 remote/service 에 전송했던 스레드와는 다를수있지만, service2를 요청한 스레드와는 같을거임
                 .doOnError( e -> log.info("에러2 "+e.getMessage()))
                 .flatMap(res -> Mono.fromCompletionStage(myService5_completableFuture.work(res))) //여기서 block이 있다면 당연 스레드 하나를 점유하게되는거기때문에 요청이 eventLoop(디폴트는 Runtime.getRuntime().availableProcessors()*2) 갯수를 초과하게된다면 전체적인 서비스는 현저히 느려진다.. 그래서 비동기 사용! 스프링의 디폴트 스레드풀 사용
+//                .flatMap(res -> Mono.fromCompletionStage(CompletableFuture.supplyAsync(() ->myService4_sync.work(res),Executors.newSingleThreadExecutor())))  //동기 메서드일때는 이렇게 해줘도 좋을듯
                 .doOnNext(s -> log.info("3번 비동기 메서드 : "+s))
                 .doOnError( e -> log.info("에러3 "+e.getMessage()));
 
