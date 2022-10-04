@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
@@ -17,6 +18,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.util.Queue;
@@ -140,18 +142,28 @@ public class ReactivePrgrammingApplication {
         SpringApplication.run(ReactivePrgrammingApplication.class, args);
     }
 
-    @Autowired MyService myService;
-    @Autowired MyService3 myService3;
+//    @Autowired MyService myService;
+//    @Autowired MyService3 myService3;
+//
+//    @Bean
+//    ApplicationRunner run(){ //컨트롤러 같은 역할이라 생각하면됨
+//        return args -> {
+//            log.info("run()");
+//            ListenableFuture<String> listenableFuture=myService3.work("hi");
+//            listenableFuture.addCallback(res -> log.info("success : {}", res),
+//                    ex -> log.error("error : {}",ex.getMessage(),ex));
+//
+//            log.info("exit");
+//        };
+//    }
+
+//    @Autowired
+//    ApplicationContext applicationContext;
 
     @Bean
-    ApplicationRunner run(){ //컨트롤러 같은 역할이라 생각하면됨
+    ApplicationRunner run2(){ //컨트롤러 같은 역할이라 생각하면됨
         return args -> {
-            log.info("run()");
-            ListenableFuture<String> listenableFuture=myService3.work("hi");
-            listenableFuture.addCallback(res -> log.info("success : {}", res),
-                    ex -> log.error("error : {}",ex.getMessage(),ex));
-
-            log.info("exit");
+//            applicationContext.getBean()
         };
     }
 

@@ -2,9 +2,12 @@ package com.study.reactiveprgramming.toby.chap3schedulers;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class FluxScEx {
@@ -31,9 +34,12 @@ public class FluxScEx {
 //                .log()
 //                .subscribe(l -> log.info("{}",l));
 
+        List<Integer> integers = Arrays.asList(1, 2, 3, 4, 5);
+        Flux.fromIterable(integers);
+        
 
         Flux.just(1,2,3,4,5,6)
-//                .publishOn(Schedulers.boundedElastic())
+                .publishOn(Schedulers.boundedElastic())
                 .map(integer -> {
                     try {
                         Thread.sleep(100);
@@ -42,7 +48,7 @@ public class FluxScEx {
                     }
                     return integer*10;
                 }).log()
-                .publishOn(Schedulers.parallel())
+//                .publishOn(Schedulers.parallel())
                 .map(integer -> integer+1).log()
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(integer -> log.info("{}",integer));

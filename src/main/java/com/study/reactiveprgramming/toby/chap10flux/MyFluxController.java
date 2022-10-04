@@ -22,6 +22,13 @@ public class MyFluxController {
         return Mono.just(list);
     }
 
+    @GetMapping("events/flux/{id}")
+    Flux<Event> eventFlux(@PathVariable long id){
+        List<Event> list=Arrays.asList(new Event(1L,"event1"),new Event(2L,"event2"));
+        return Flux.fromIterable(list);
+    }
+
+
     @GetMapping(value = "events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     Flux<Event> events(){
         return Flux

@@ -10,13 +10,16 @@ public class LambdaTest {
     void 람다클래스_확인(){
         int a=10;
         Runnable runnable1=()->{
+            System.out.println(a);
             int b=5;
         };
 
         Runnable runnable2=new Runnable() {
             @Override
             public void run() {
+                System.out.println(a);
                 int a=5;
+
             }
         };
 
