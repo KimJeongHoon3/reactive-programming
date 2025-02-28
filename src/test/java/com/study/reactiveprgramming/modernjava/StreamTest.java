@@ -6,6 +6,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -146,6 +147,8 @@ public class StreamTest {
                 .reduce(Integer::max)
                 .ifPresent(System.out::println);
 
+
+
         System.out.println("-----------------");
         //8. 전체 트랜잭션중 최솟값?
         transactions.stream()
@@ -154,6 +157,26 @@ public class StreamTest {
                 .ifPresent(System.out::println);
 
         Stream<String> stringStream = Stream.of("hi", "heu", "aa");
+
+        Optional<Transaction> reduce = transactions.stream()
+                .reduce(BinaryOperator.maxBy(Comparator.comparingInt(Transaction::getValue)));
+
+        Map<Trader, Optional<Transaction>> collect = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getTrader, () -> new TreeMap<>(Comparator.comparing(Trader::getName).reversed()) , Collectors.maxBy(Comparator.comparingInt(Transaction::getValue))));
+        System.out.println("collect : " + collect);
+
+        Optional<Transaction> collect1 = transactions.stream()
+                .collect(Collectors.maxBy(Comparator.comparingInt(Transaction::getValue)));
+
+        Optional<Transaction> collect2 = transactions.stream()
+                .collect(Collectors.reducing(BinaryOperator.maxBy(Comparator.comparingInt(Transaction::getValue))));
+
+        Map<Trader, Integer> collect3 = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getTrader, Collectors.mapping(Transaction::getValue, Collectors.summingInt(Integer::intValue))));
+        System.out.println("collect3 : "+collect3);
+        collect3 = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getTrader, Collectors.summingInt(Transaction::getValue)));
+        System.out.println("collect3 : "+collect3);
 
     }
 

@@ -8,13 +8,16 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.summarizingInt;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EtcTest {
     List<Integer> list=new ArrayList<>();
@@ -399,5 +402,161 @@ public class EtcTest {
         System.out.println(s);
     }
 
+    @Test
+    void containTest(){
+        AAA a = new AAA("a");
+        AAA b = new AAA("a");
 
+        System.out.println(a == b);
+        System.out.println(a.equals(b));
+
+        HashSet<AAA> l = new HashSet<>();
+        System.out.println(l.add(a));
+        System.out.println(l.add(b));
+        System.out.println(l.size());
+
+    }
+
+    static class AAA {
+        private String a;
+
+        public AAA(String a) {
+            this.a = a;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AAA aaa = (AAA) o;
+            return Objects.equals(a, aaa.a);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(a);
+        }
+    }
+
+    @Test
+    void tempTest() {
+        List<String> strings = Arrays.asList("가", "나", "다");
+        System.out.println(strings.stream().collect(joining()));
+    }
+
+    @Test
+    void localDateToDate() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate now1 = LocalDate.now();
+//        System.out.println(now.atZone(ZoneId.systemDefault()));
+        ZonedDateTime x = now.atZone(ZoneId.of("Asia/Seoul"));
+        System.out.println(x);
+//        System.out.println(now1.atStartOfDay().atZone(ZoneId.systemDefault()));
+        ZonedDateTime x1 = now1.atStartOfDay().atZone(ZoneId.of("Asia/Seoul"));
+        System.out.println(x1);
+
+        Date from = Date.from(x.toInstant());
+        Date from2 = Date.from(x1.toInstant());
+
+        System.out.println(from);
+        System.out.println(from2);
+        LocalDate localDate = from.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        System.out.println(now);
+        System.out.println(localDate);
+//        assertEquals(now, localDate);
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        System.out.println(zonedDateTime.getZone());
+
+        OffsetDateTime offsetDateTime = OffsetDateTime.now();
+        System.out.println(offsetDateTime.getOffset());
+
+        System.out.println(Instant.now().toEpochMilli());
+        System.out.println(System.currentTimeMillis());
+
+        Date date = new Date();
+        System.out.println(date);
+
+    }
+
+    private static final ZoneId ASIA_SEOUL_ZONE_ID = ZoneId.of("Asia/Seoul");
+    @Test
+    void date만나오기() {
+//        Date date = new Date(2022,5,3,5,10,30);
+        Date date = new Date();
+//        System.out.println(date.getTime());
+//        System.out.println(System.currentTimeMillis());
+        Instant instant = Instant.now();
+//        System.out.println(instant.toEpochMilli());
+//
+//        System.out.println(Instant.now());
+        System.out.println("Instant.ofEpochMilli(date.getTime()).atZone(ASIA_SEOUL_ZONE_ID) : "+Instant.ofEpochMilli(date.getTime()).atZone(ASIA_SEOUL_ZONE_ID));
+        LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ASIA_SEOUL_ZONE_ID).toLocalDate();
+        System.out.println(localDate);
+        System.out.println("localDate.atStartOfDay(ASIA_SEOUL_ZONE_ID) : "+localDate.atStartOfDay(ASIA_SEOUL_ZONE_ID));
+        System.out.println("localDate.atStartOfDay(ASIA_SEOUL_ZONE_ID).toInstant() : "+ localDate.atStartOfDay(ASIA_SEOUL_ZONE_ID).toInstant());
+        System.out.println(date);
+        System.out.println(toDate(localDate));
+
+        System.out.println(LocalDate.now().atStartOfDay(ASIA_SEOUL_ZONE_ID).toInstant());
+        System.out.println(LocalDateTime.now().atZone(ASIA_SEOUL_ZONE_ID).toInstant().atZone(ASIA_SEOUL_ZONE_ID));
+    }
+
+    @Test
+    void 오늘date만() {
+        LocalDateTime now = LocalDateTime.now(ASIA_SEOUL_ZONE_ID);
+        LocalDateTime now1 = LocalDateTime.now();
+
+        System.out.println(now);
+        System.out.println(now1);
+
+
+    }
+
+    @Test
+    void 오늘마지막dateTime() {
+        LocalDate today = LocalDate.now(ASIA_SEOUL_ZONE_ID);
+        LocalDateTime localDateTime = today.atTime(23, 59, 59, 0);
+
+        System.out.println(toDate(localDateTime));
+    }
+
+    @Test
+    void calendarTest() {
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance(Locale.KOREAN);
+        cal.setTime(date);
+//        cal.add(y, z);
+        Date currentTime = cal.getTime();
+        System.out.println("setTime호출 : "+currentTime);
+
+        Calendar instance = Calendar.getInstance(Locale.KOREAN);
+        System.out.println(instance.getTime());
+    }
+
+    @Test
+    void date비교() {
+        Date date = new Date();
+        Date date2 = new Date();
+
+        assertEquals(0, date.compareTo(date2));
+    }
+
+    @Test
+    void formatter() {
+        String s = "2022-03-18";
+        LocalDate parse = LocalDate.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        System.out.println(parse);
+    }
+    public static Date toDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ASIA_SEOUL_ZONE_ID).toInstant());
+    }
+
+    private static Date toDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ASIA_SEOUL_ZONE_ID)
+                .toInstant());
+    }
 }

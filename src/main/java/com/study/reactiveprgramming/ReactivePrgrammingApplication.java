@@ -1,13 +1,17 @@
 package com.study.reactiveprgramming;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -17,6 +21,7 @@ import org.springframework.util.concurrent.FailureCallback;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
@@ -120,7 +125,7 @@ public class ReactivePrgrammingApplication {
         @GetMapping("/emitter")
         public ResponseBodyEmitter emitter(){
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-
+            emitter.complete();
             Executors.newSingleThreadExecutor().submit(()->{
                 try{
                     for(int i=0;i<=50;i++){
@@ -133,8 +138,17 @@ public class ReactivePrgrammingApplication {
             return emitter;
         }
 
-
         //////////////////////////////////////
+
+        @GetMapping("/thread-status")
+        public String temp() {
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "hi";
+        }
     }
 
 
@@ -164,6 +178,48 @@ public class ReactivePrgrammingApplication {
     ApplicationRunner run2(){ //컨트롤러 같은 역할이라 생각하면됨
         return args -> {
 //            applicationContext.getBean()
+        };
+    }
+
+    @Bean
+    ApplicationRunner run3() {
+//        return args -> {
+//            Thread t = new Thread(() -> {
+//                RestTemplate restTemplate = new RestTemplate();
+//                String body = restTemplate.getForEntity("http://localhost:7878/thread-status", String.class)
+//                        .getBody();
+//
+//                log.info("return val : "+body);
+//            });
+//
+//            t.start();
+//
+//            while(true) {
+//                log.info(t.getState().toString());
+//                Thread.sleep(1000);
+//
+//                if (!t.isAlive()) {
+//                    break;
+//                }
+//            }
+//
+//        };
+        return args -> {
+            for (int i=0; i<2; i++) {
+                new Thread(() -> {
+                    RestTemplate restTemplate = new RestTemplateBuilder().build();
+//                    RestTemplate restTemplate = new RestTemplate();
+                    try{
+                        String body = restTemplate.getForEntity("http://localhost:7777/tomcat-test", String.class).getBody();
+                        System.out.println(body);
+                    }catch (Exception e) {
+                        log.error("",e);
+                    }
+
+                }).start();
+            }
+
+
         };
     }
 
